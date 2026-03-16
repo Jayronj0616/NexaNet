@@ -10,53 +10,42 @@ class SubscriberController extends Controller
 {
     public function index(Request $request)
     {
-        $query = User::where('role', 'customer')
-            ->with('subscription.plan');
+        $search = $request->input('search');
 
-        if ($request->search) {
-            $query->where(function ($q) use ($request) {
-                $q->where('first_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('last_name', 'like', '%' . $request->search . '%')
-                  ->orWhere('email', 'like', '%' . $request->search . '%')
-                  ->orWhere('phone', 'like', '%' . $request->search . '%');
+        $query = User::where('role', 'customer');
+
+        if ($search) {
+            $query->where(function ($q) use ($search) {
+                $q->where('first_name', 'like', "%{$search}%")
+                  ->orWhere('last_name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('phone', 'like', "%{$search}%");
             });
         }
 
-        if ($request->status) {
-            $query->where('is_active', $request->status === 'active');
-        }
-
-        $subscribers = $query->latest()->paginate(15);
-
-        return response()->json($subscribers);
+        return response()->json($query->orderBy('created_at', 'desc')->paginate(15));
     }
 
-    public function show(User $user)
+    public function show($id)
     {
-        if ($user->role !== 'customer') {
-            return response()->json(['message' => 'User is not a customer.'], 404);
-        }
+        $user = User::with(['subscription.plan', 'bills' => function ($query) {
+            $query->orderBy('created_at', 'desc')->take(10);
+        }])->findOrFail($id);
 
-        $user->load([
-            'subscriptions.plan',
-            'bills' => fn($q) => $q->latest()->take(5),
-            'tickets' => fn($q) => $q->latest()->take(5),
-        ]);
-
-        return response()->json($user);
+        return response()->json($user); // The view model in frontend expects subscription and bills merged loosely, we can return the user directly since relations are loaded.
     }
 
-    public function toggleStatus(User $user)
+    public function toggleStatus($id)
     {
-        if ($user->role !== 'customer') {
-            return response()->json(['message' => 'User is not a customer.'], 404);
+        $user = User::findOrFail($id);
+        $user->is_active = !$user->is_active;
+        $user->save();
+
+        if ($user->subscription) {
+            $user->subscription->status = $user->is_active ? 'active' : 'suspended';
+            $user->subscription->save();
         }
 
-        $user->update(['is_active' => !$user->is_active]);
-
-        return response()->json([
-            'message'   => 'Subscriber status updated.',
-            'is_active' => $user->is_active,
-        ]);
+        return response()->json(['message' => 'Status updated successfully.', 'user' => $user]);
     }
 }

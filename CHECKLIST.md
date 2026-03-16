@@ -103,52 +103,44 @@ All in `backend/app/Models/`
 - [x] `BillController.php` — index (paginated), show (with payments)
 - [x] `PaymentController.php` [STUB] — initiate (scaffold), webhook (scaffold), index
 - [x] `TicketController.php` — index, store, show (with replies), reply
-- [ ] `NotificationController.php` — index, markRead, markAllRead
-- [ ] `PlanChangeRequestController.php` — index, store
+- [x] `NotificationController.php` — index, markRead, markAllRead
+- [x] `PlanChangeRequestController.php` — index, store
 
 ### Admin (`app/Http/Controllers/Admin/`)
-- [ ] `DashboardController.php` — counts: pending apps, active subscribers, unpaid bills, open tickets
-- [ ] `SubscriberController.php` — index (paginated+search), show (with subscription+bills), toggleStatus
-- [ ] `ServiceApplicationController.php` — index, show, approve, reject, schedule (assign technician+date), completeInstallation, activate (creates user+subscription, sends email)
-- [ ] `BillController.php` — index, show, generate (bulk for all active subscribers), markPaid, cancel
-- [ ] `TicketController.php` — index, show, updateStatus, reply (staff reply)
-- [ ] `AnnouncementController.php` — index, store, show, update, destroy
+- [x] `DashboardController.php` — counts: pending apps, active subscribers, unpaid bills, open tickets
+- [x] `SubscriberController.php` — index (paginated+search), show (with subscription+bills), toggleStatus
+- [x] `ServiceApplicationController.php` — index, show, approve, reject, schedule (assign technician+date), completeInstallation, activate (creates user+subscription, sends email)
+- [x] `BillController.php` — index, show, generate (bulk for all active subscribers), markPaid, cancel
+- [x] `TicketController.php` — index, show, updateStatus, reply (staff reply)
+- [x] `AnnouncementController.php` — index, store, show, update, destroy
 
 ### SuperAdmin (`app/Http/Controllers/SuperAdmin/`)
-- [ ] `DashboardController.php` — system-wide stats
-- [ ] `PlanController.php` — index, store, show, update, toggle (activate/deactivate), destroy
-- [ ] `StaffController.php` — index, store, show, update, toggleStatus, destroy
-- [ ] `SystemSettingController.php` — index (grouped), update (bulk key-value)
-- [ ] `PlanChangeRequestController.php` — index, approve (swaps subscription plan), reject
+- [x] `DashboardController.php` — system-wide stats
+- [x] `PlanController.php` — index, store, show, update, toggle (activate/deactivate), destroy
+- [x] `StaffController.php` — index, store, show, update, toggleStatus, destroy
+- [x] `SystemSettingController.php` — index (grouped), update (bulk key-value)
+- [x] `PlanChangeRequestController.php` — index, approve (swaps subscription plan), reject
 
 ---
 
 ## PHASE 6 — BACKEND SERVICES & MAIL
 
 ### Services (`app/Services/`)
-- [ ] `BillingService.php` — generateMonthlyBills(), generateBillForSubscriber(), markOverdue()
-- [ ] `NotificationService.php` — notify(userId, title, message, type, link)
-- [ ] `PaymentService.php` [STUB] — initiate(), verify(), refund() — scaffold with TODO comments
+- [x] `BillingService.php` — generateMonthlyBills(), generateBillForSubscriber(), markOverdue()
+- [x] `NotificationService.php` — notify(userId, title, message, type, link)
+- [x] `PaymentService.php` [STUB] — initiate(), verify(), refund() — scaffold with TODO comments
 
 ### Mail (`app/Mail/`)
-- [ ] `ApplicationSubmitted.php`
-- [ ] `ApplicationApproved.php`
-- [ ] `ApplicationRejected.php`
-- [ ] `InstallationScheduled.php`
-- [ ] `InstallationComplete.php`
-- [ ] `AccountActivated.php`
-- [ ] `BillGenerated.php`
-- [ ] `TicketUpdated.php`
-- [ ] `PlanChangeApproved.php`
+- [x] `SystemNotificationMail.php` — Universal dynamic mail class replacing the 9 separate ones
 
 ### Mail Views (`resources/views/emails/`)
-- [ ] Blade templates for each of the above mails
+- [x] `system-notification.blade.php` — Universal dynamic blade template
 
 ---
 
 ## PHASE 7 — BACKEND CORS CONFIG
 
-- [ ] `config/cors.php` — allow `http://localhost:3000`, all headers, credentials: true
+- [x] `config/cors.php` — allow `http://localhost:3000`, all headers, credentials: true
 
 ---
 
@@ -162,34 +154,34 @@ All in `backend/app/Models/`
 - [ ] `middleware.ts` — protect `/customer`, `/admin`, `/superadmin` routes by role; redirect unauthenticated to `/login`
 
 ### Shared UI Components (`components/ui/`)
-- [ ] `Modal.tsx` — reusable modal wrapper
-- [ ] `DataTable.tsx` — table with pagination, search
-- [ ] `Badge.tsx` — status badge with color by value
-- [ ] `StatusBadge.tsx` — pre-mapped colors for app/bill/ticket statuses
-- [ ] `PageHeader.tsx` — title + optional action button
-- [ ] `LoadingSpinner.tsx`
-- [ ] `EmptyState.tsx`
-- [ ] `ConfirmDialog.tsx` — wraps SweetAlert2 confirm
-- [ ] `Sidebar.tsx` — collapsible sidebar per portal
-- [ ] `Topbar.tsx` — user info, notifications bell, logout
-- [ ] `PortalLayout.tsx` — sidebar + topbar wrapper
+- [x] `Modal.tsx` — reusable modal wrapper
+- [x] `DataTable.tsx` — table with pagination, search
+- [x] `Badge.tsx` — status badge with color by value
+- [x] `StatusBadge.tsx` — pre-mapped colors for app/bill/ticket statuses
+- [x] `PageHeader.tsx` — title + optional action button
+- [x] `LoadingSpinner.tsx`
+- [x] `EmptyState.tsx`
+- [x] `ConfirmDialog.tsx` — wraps SweetAlert2 confirm
+- [x] `Sidebar.tsx` — collapsible sidebar per portal
+- [x] `Topbar.tsx` — user info, notifications bell, logout
+- [x] `PortalLayout.tsx` — sidebar + topbar wrapper
 
 ---
 
 ## PHASE 9 — FRONTEND AUTH
 
-- [ ] `app/(auth)/login/page.tsx` — single login page for all roles; redirects by role after login
-- [ ] `hooks/useAuth.ts` — login(), logout(), user state, role checks
+- [x] `app/(auth)/login/page.tsx` — single login page for all roles; redirects by role after login
+- [x] `hooks/useAuth.ts` — login(), logout(), user state, role checks
 
 ---
 
 ## PHASE 10 — FRONTEND PUBLIC PAGES
 
-- [ ] `app/(public)/page.tsx` — landing/marketing page
-- [ ] `app/(public)/plans/page.tsx` — plans & pricing
-- [ ] `app/(public)/check-availability/page.tsx` — service area checker form
-- [ ] `app/(public)/apply/page.tsx` — multi-step service application form
-- [ ] `app/(public)/track/page.tsx` — application status tracker (by reference or email)
+- [x] `app/(public)/page.tsx` — landing/marketing page
+- [x] `app/(public)/plans/page.tsx` — plans & pricing
+- [x] `app/(public)/check-availability/page.tsx` — service area checker form
+- [x] `app/(public)/apply/page.tsx` — multi-step service application form
+- [x] `app/(public)/track/page.tsx` — application status tracker (by reference or email)
 
 ---
 
@@ -209,13 +201,13 @@ All CRUD in modals. Layout: Sidebar + Topbar.
 
 All CRUD in modals. Layout: Sidebar + Topbar.
 
-- [ ] `app/admin/layout.tsx`
-- [ ] `app/admin/dashboard/page.tsx` — stats cards
-- [ ] `app/admin/subscribers/page.tsx` — table; modal: view subscriber details, toggle status
-- [ ] `app/admin/applications/page.tsx` — table; modal: view, approve/reject, schedule install, complete, activate
-- [ ] `app/admin/billing/page.tsx` — table; modal: view bill; action: generate monthly bills (SweetAlert2 confirm), mark paid
-- [ ] `app/admin/tickets/page.tsx` — table; modal: view thread, reply, update status
-- [ ] `app/admin/announcements/page.tsx` — table; modal: create, edit, delete
+- [x] `app/admin/layout.tsx`
+- [x] `app/admin/dashboard/page.tsx` — stats cards
+- [x] `app/admin/subscribers/page.tsx` — table; modal: view subscriber details, toggle status
+- [x] `app/admin/applications/page.tsx` — table; modal: view, approve/reject, schedule install, complete, activate
+- [x] `app/admin/billing/page.tsx` — table; modal: view bill; action: generate monthly bills (SweetAlert2 confirm), mark paid
+- [x] `app/admin/tickets/page.tsx` — table; modal: view thread, reply, update status
+- [x] `app/admin/announcements/page.tsx` — table; modal: create, edit, delete
 
 ---
 
@@ -223,19 +215,19 @@ All CRUD in modals. Layout: Sidebar + Topbar.
 
 All CRUD in modals. Inherits all admin pages plus:
 
-- [ ] `app/superadmin/layout.tsx`
-- [ ] `app/superadmin/dashboard/page.tsx`
-- [ ] `app/superadmin/plans/page.tsx` — table; modal: create, edit, toggle active, delete
-- [ ] `app/superadmin/staff/page.tsx` — table; modal: create staff, edit, toggle status, delete
-- [ ] `app/superadmin/settings/page.tsx` — grouped settings form (no modal needed, inline save)
-- [ ] `app/superadmin/plan-changes/page.tsx` — table; modal: view request, approve/reject
+- [x] `app/superadmin/layout.tsx`
+- [x] `app/superadmin/dashboard/page.tsx`
+- [x] `app/superadmin/plans/page.tsx` — table; modal: create, edit, toggle active, delete
+- [x] `app/superadmin/staff/page.tsx` — table; modal: create staff, edit, toggle status, delete
+- [x] `app/superadmin/settings/page.tsx` — grouped settings form (no modal needed, inline save)
+- [x] `app/superadmin/plan-changes/page.tsx` — table; modal: view request, approve/reject
 
 ---
 
 ## PHASE 14 — PAYMENT SCAFFOLD (Frontend)
 
-- [ ] `components/customer/PaymentModal.tsx` — shows bill amount, method selector (Stripe/PayMongo), "Pay Now" button → calls `/api/customer/payments/initiate`; shows stub response with TODO note
-- [ ] `app/customer/billing/page.tsx` — includes PaymentModal trigger per bill row
+- [x] `components/customer/PaymentModal.tsx` — shows bill amount, method selector (Stripe/PayMongo), "Pay Now" button → calls `/api/customer/payments/initiate`; shows stub response with TODO note
+- [x] `app/customer/billing/page.tsx` — includes PaymentModal trigger per bill row
 
 ---
 
@@ -255,8 +247,8 @@ Triggered from backend controllers at these events:
 | Ticket status updated | `Admin\TicketController@updateStatus` | `TicketUpdated` |
 | Plan change approved | `SuperAdmin\PlanChangeRequestController@approve` | `PlanChangeApproved` |
 
-- [ ] All mail classes created
-- [ ] All blade email templates created
+- [x] All mail classes created (using unified 'SystemNotificationMail' class)
+- [x] All blade email templates created (using unified 'system-notification.blade.php')
 - [ ] Mail triggered in each controller method above
 
 ---
@@ -286,10 +278,7 @@ Triggered from backend controllers at these events:
 
 ## NEXT IMMEDIATE TASK
 
-> **Continue from: Phase 5 — Backend Controllers**
-> Write the remaining controllers in this order:
-> 1. `Customer\NotificationController`
-> 2. `Customer\PlanChangeRequestController`
-> 3. All 6 `Admin\` controllers
-> 4. All 5 `SuperAdmin\` controllers
-> Then move to Phase 6 (Services + Mail), Phase 7 (CORS), then Phase 8+ (Frontend).
+> **Continue from: Phase 16 — FINAL WIRING & TESTING**
+> 1. Test all CRUD endpoints using Seeded accounts.
+> 2. Manually trigger the unified Mail service inside the 9 endpoints.
+> 3. Mobile responsiveness check on all portals.

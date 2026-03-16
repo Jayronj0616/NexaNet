@@ -8,70 +8,61 @@ use Illuminate\Http\Request;
 
 class AnnouncementController extends Controller
 {
-    public function index(Request $request)
+    public function index()
     {
-        $query = Announcement::with('author');
-
-        if ($request->type) {
-            $query->where('type', $request->type);
-        }
-
-        return response()->json($query->latest()->paginate(15));
+        $announcements = Announcement::orderBy('created_at', 'desc')->get();
+        return response()->json($announcements);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
-            'title'        => 'required|string|max:255',
-            'content'      => 'required|string',
-            'type'         => 'required|in:general,outage,maintenance,promo',
+        $validated = $request->validate([
+            'title' => 'required|string|max:255',
+            'content' => 'required|string',
+            'type' => 'required|in:info,maintenance,outage,banner,modal,feed',
             'is_published' => 'boolean',
-            'expires_at'   => 'nullable|date|after:now',
+            'expires_at' => 'nullable|date'
         ]);
 
-        $announcement = Announcement::create([
-            'created_by'   => $request->user()->id,
-            'title'        => $request->title,
-            'content'      => $request->content,
-            'type'         => $request->type,
-            'is_published' => $request->is_published ?? true,
-            'published_at' => $request->is_published ? now() : null,
-            'expires_at'   => $request->expires_at,
-        ]);
+        if ($validated['is_published'] ?? false) {
+            $validated['published_at'] = now();
+        }
 
-        return response()->json([
-            'message'      => 'Announcement created.',
-            'announcement' => $announcement->load('author'),
-        ], 201);
+        $announcement = Announcement::create($validated);
+        return response()->json(['message' => 'Announcement created.', 'announcement' => $announcement]);
     }
 
-    public function show(Announcement $announcement)
+    public function show($id)
     {
-        return response()->json($announcement->load('author'));
+        $announcement = Announcement::findOrFail($id);
+        return response()->json($announcement);
     }
 
-    public function update(Request $request, Announcement $announcement)
+    public function update(Request $request, $id)
     {
-        $request->validate([
-            'title'        => 'sometimes|string|max:255',
-            'content'      => 'sometimes|string',
-            'type'         => 'sometimes|in:general,outage,maintenance,promo',
-            'is_published' => 'sometimes|boolean',
-            'expires_at'   => 'nullable|date',
+        $announcement = Announcement::findOrFail($id);
+
+        $validated = $request->validate([
+            'title' => 'sometimes|required|string|max:255',
+            'content' => 'sometimes|required|string',
+            'type' => 'sometimes|required|in:info,maintenance,outage,banner,modal,feed',
+            'is_published' => 'boolean',
+            'expires_at' => 'nullable|date'
         ]);
 
-        $announcement->update($request->only([
-            'title', 'content', 'type', 'is_published', 'expires_at',
-        ]));
+        if (isset($validated['is_published']) && $validated['is_published'] && !$announcement->is_published) {
+            $validated['published_at'] = now();
+        } elseif (isset($validated['is_published']) && !$validated['is_published']) {
+            $validated['published_at'] = null;
+        }
 
-        return response()->json([
-            'message'      => 'Announcement updated.',
-            'announcement' => $announcement->load('author'),
-        ]);
+        $announcement->update($validated);
+        return response()->json(['message' => 'Announcement updated.', 'announcement' => $announcement]);
     }
 
-    public function destroy(Announcement $announcement)
+    public function destroy($id)
     {
+        $announcement = Announcement::findOrFail($id);
         $announcement->delete();
         return response()->json(['message' => 'Announcement deleted.']);
     }

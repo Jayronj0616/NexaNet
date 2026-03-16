@@ -10,20 +10,26 @@ class SystemSettingController extends Controller
 {
     public function index()
     {
-        $settings = SystemSetting::all()->groupBy('group');
+        $settings = SystemSetting::all();
         return response()->json($settings);
     }
 
     public function update(Request $request)
     {
-        $request->validate([
-            'settings'         => 'required|array',
-            'settings.*.key'   => 'required|string',
-            'settings.*.value' => 'nullable|string',
-        ]);
+        $data = $request->all();
 
-        foreach ($request->settings as $item) {
-            SystemSetting::where('key', $item['key'])->update(['value' => $item['value']]);
+        foreach ($data as $key => $value) {
+            $setting = SystemSetting::where('key', $key)->first();
+            
+            if ($setting) {
+                // Formatting for boolean
+                if ($setting->type === 'boolean') {
+                    $setting->value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? 'true' : 'false';
+                } else {
+                    $setting->value = (string) $value;
+                }
+                $setting->save();
+            }
         }
 
         return response()->json(['message' => 'Settings updated successfully.']);

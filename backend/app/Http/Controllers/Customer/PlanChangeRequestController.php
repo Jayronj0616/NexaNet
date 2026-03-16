@@ -4,66 +4,50 @@ namespace App\Http\Controllers\Customer;
 
 use App\Http\Controllers\Controller;
 use App\Models\PlanChangeRequest;
-use App\Models\Plan;
 use Illuminate\Http\Request;
 
 class PlanChangeRequestController extends Controller
 {
     public function index(Request $request)
     {
-        $requests = PlanChangeRequest::where('user_id', $request->user()->id)
-            ->with(['currentPlan', 'requestedPlan'])
-            ->latest()
-            ->paginate(10);
-
+        $requests = $request->user()->planChangeRequests()->with(['currentPlan', 'requestedPlan'])->orderBy('created_at', 'desc')->get();
         return response()->json($requests);
     }
 
     public function store(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'requested_plan_id' => 'required|exists:plans,id',
-            'reason'            => 'nullable|string|max:1000',
+            'reason' => 'nullable|string'
         ]);
 
-        $user         = $request->user();
-        $subscription = $user->subscriptions()->where('status', 'active')->latest()->first();
+        $subscription = $request->user()->subscription;
 
         if (!$subscription) {
-            return response()->json(['message' => 'You do not have an active subscription.'], 422);
+            return response()->json(['message' => 'No active subscription found.'], 400);
         }
 
-        // Block duplicate pending requests
-        $existing = PlanChangeRequest::where('user_id', $user->id)
-            ->where('status', 'pending')
-            ->first();
-
-        if ($existing) {
-            return response()->json(['message' => 'You already have a pending plan change request.'], 422);
+        // Check for pending
+        $pending = $request->user()->planChangeRequests()->where('status', 'pending')->exists();
+        if ($pending) {
+            return response()->json(['message' => 'You already have a pending plan change request.'], 400);
         }
 
-        $currentPlan   = $subscription->plan;
-        $requestedPlan = Plan::findOrFail($request->requested_plan_id);
-
-        if ($currentPlan->id === $requestedPlan->id) {
-            return response()->json(['message' => 'You are already on this plan.'], 422);
-        }
+        $currentPlan = $subscription->plan;
+        $requestedPlan = \App\Models\Plan::findOrFail($validated['requested_plan_id']);
 
         $type = $requestedPlan->price > $currentPlan->price ? 'upgrade' : 'downgrade';
 
-        $planChangeRequest = PlanChangeRequest::create([
-            'user_id'           => $user->id,
-            'subscription_id'   => $subscription->id,
-            'current_plan_id'   => $currentPlan->id,
+        $planChange = PlanChangeRequest::create([
+            'user_id' => $request->user()->id,
+            'subscription_id' => $subscription->id,
+            'current_plan_id' => $currentPlan->id,
             'requested_plan_id' => $requestedPlan->id,
-            'type'              => $type,
-            'status'            => 'pending',
-            'reason'            => $request->reason,
+            'type' => $type,
+            'status' => 'pending',
+            'reason' => $validated['reason'] ?? null
         ]);
 
-        return response()->json([
-            'message' => 'Plan change request submitted successfully.',
-            'request' => $planChangeRequest->load(['currentPlan', 'requestedPlan']),
-        ], 201);
+        return response()->json(['message' => 'Plan change request submitted successfully.', 'data' => $planChange], 201);
     }
 }
