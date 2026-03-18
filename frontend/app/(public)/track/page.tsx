@@ -1,5 +1,6 @@
 'use client';
 
+import axios from 'axios';
 import React, { useState, useEffect, Suspense } from 'react';
 import { api } from '@/lib/api';
 import { useSearchParams } from 'next/navigation';
@@ -8,40 +9,54 @@ import { ServiceApplication } from '@/types';
 import { StatusBadge } from '@/components/ui/StatusBadge';
 import { formatDate } from '@/lib/utils';
 import { FullPageLoader } from '@/components/ui/LoadingSpinner';
+import { ApplicationTimeline } from '@/components/application/ApplicationTimeline';
 
 function TrackForm() {
     const searchParams = useSearchParams();
-    const [searchTerm, setSearchTerm] = useState(searchParams.get('reference') || searchParams.get('email') || '');
+    const initialSearchTerm = searchParams.get('reference') || searchParams.get('email') || '';
+    const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<ServiceApplication | null>(null);
     const [error, setError] = useState('');
 
     useEffect(() => {
-        if (searchTerm) {
-            handleSearch(new Event('submit') as any);
+        if (initialSearchTerm) {
+            void fetchTrackingResult(initialSearchTerm);
         }
-    }, []);
+    }, [initialSearchTerm]);
 
-    const handleSearch = async (e: React.FormEvent) => {
-        e.preventDefault();
-        if (!searchTerm) return;
-
+    const fetchTrackingResult = async (term: string) => {
         setLoading(true);
         setError('');
         setResult(null);
 
         try {
-            const isEmail = searchTerm.includes('@');
-            const param = isEmail ? `email=${encodeURIComponent(searchTerm)}` : `reference=${encodeURIComponent(searchTerm)}`;
-            
+            const isEmail = term.includes('@');
+            const param = isEmail ? `email=${encodeURIComponent(term)}` : `reference=${encodeURIComponent(term)}`;
+
             const response = await api.get(`/public/applications/track?${param}`);
-            setResult(response.data.data || response.data);
-        } catch (err: any) {
+            const payload = response.data.data || response.data;
+            const application = Array.isArray(payload) ? payload[0] : payload;
+
+            setResult(application ?? null);
+        } catch (err: unknown) {
             console.error('Track failed', err);
-            setError(err.response?.data?.message || 'Application not found. Please check your reference number or email.');
+
+            if (axios.isAxiosError(err)) {
+                setError(err.response?.data?.message || 'Application not found. Please check your reference number or email.');
+            } else {
+                setError('Application not found. Please check your reference number or email.');
+            }
         } finally {
             setLoading(false);
         }
+    };
+
+    const handleSearch = async (e: React.FormEvent) => {
+        e.preventDefault();
+        if (!searchTerm) return;
+
+        await fetchTrackingResult(searchTerm);
     };
 
     return (
@@ -97,6 +112,21 @@ function TrackForm() {
                             </div>
                             <StatusBadge status={result.status} className="text-sm px-3 py-1.5" />
                         </div>
+                        <div className="border-b border-gray-200 bg-blue-50/60 px-4 py-5 sm:px-6">
+                            <div className="grid gap-4 md:grid-cols-[1.2fr_2fr]">
+                                <div className="rounded-xl border border-blue-100 bg-white px-4 py-4 shadow-sm">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Current Stage</p>
+                                    <h4 className="mt-2 text-xl font-semibold text-gray-900">{result.status_label || 'Application Update'}</h4>
+                                    <p className="mt-2 text-sm leading-6 text-gray-600">{result.status_description}</p>
+                                </div>
+                                <div className="rounded-xl border border-blue-100 bg-white px-4 py-4 shadow-sm">
+                                    <p className="text-xs font-semibold uppercase tracking-wide text-blue-700">Timeline</p>
+                                    <p className="mt-2 text-sm leading-6 text-gray-600">
+                                        Follow each stage of your application, from processing to installation and activation.
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
                         <div className="border-t border-gray-100">
                             <dl className="divide-y divide-gray-100">
                                 <div className="px-4 py-5 sm:grid sm:grid-cols-3 sm:gap-4 sm:px-6">
@@ -131,6 +161,15 @@ function TrackForm() {
                                 )}
                             </dl>
                         </div>
+                        {result.timeline && result.timeline.length > 0 && (
+                            <div className="border-t border-gray-200 bg-gray-50 px-4 py-6 sm:px-6">
+                                <h4 className="text-base font-semibold text-gray-900">Application Timeline</h4>
+                                <p className="mt-1 text-sm text-gray-600">You can use this view to see whether your application is still pending, already processed, or ready for installation.</p>
+                                <div className="mt-5">
+                                    <ApplicationTimeline items={result.timeline} />
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

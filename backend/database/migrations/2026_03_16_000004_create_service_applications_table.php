@@ -35,6 +35,9 @@ return new class extends Migration
             $table->text('notes')->nullable();
             $table->foreignId('reviewed_by')->nullable()->constrained('users')->onDelete('set null');
             $table->timestamp('reviewed_at')->nullable();
+            $table->timestamp('scheduled_at')->nullable();
+            $table->timestamp('installation_completed_at')->nullable();
+            $table->timestamp('activated_at')->nullable();
             $table->foreignId('user_id')->nullable()->constrained()->onDelete('set null');
             $table->timestamps();
         });

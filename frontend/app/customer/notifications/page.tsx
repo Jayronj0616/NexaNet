@@ -1,23 +1,17 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { api } from '@/lib/api';
+import { Notification } from '@/types';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { FullPageLoader } from '@/components/ui/LoadingSpinner';
 import { formatDate } from '@/lib/utils';
 import { Bell, CheckCircle2, AlertCircle } from 'lucide-react';
 import { toast } from '@/components/ui/ConfirmDialog';
 
-interface Notification {
-    id: number;
-    title: string;
-    message: string;
-    type: string;
-    is_read: boolean;
-    created_at: string;
-}
-
 export default function CustomerNotifications() {
+    const router = useRouter();
     const [notifications, setNotifications] = useState<Notification[]>([]);
     const [loading, setLoading] = useState(true);
 
@@ -39,8 +33,12 @@ export default function CustomerNotifications() {
 
     const markAsRead = async (id: number) => {
         try {
-            await api.put(`/customer/notifications/${id}/read`);
-            setNotifications(notifications.map(n => n.id === id ? { ...n, is_read: true } : n));
+            await api.patch(`/customer/notifications/${id}/read`);
+            setNotifications((currentNotifications) => currentNotifications.map((notification) => (
+                notification.id === id
+                    ? { ...notification, is_read: true }
+                    : notification
+            )));
         } catch (error) {
             console.error("Failed to mark notification as read", error);
         }
@@ -48,11 +46,21 @@ export default function CustomerNotifications() {
 
     const markAllAsRead = async () => {
         try {
-            await api.put('/customer/notifications/read-all');
+            await api.post('/customer/notifications/read-all');
             setNotifications(notifications.map(n => ({ ...n, is_read: true })));
             toast('All notifications marked as read', 'success');
         } catch (error) {
             console.error("Failed to mark all as read", error);
+        }
+    };
+
+    const handleNotificationClick = async (notification: Notification) => {
+        if (!notification.is_read) {
+            await markAsRead(notification.id);
+        }
+
+        if (notification.link) {
+            router.push(notification.link);
         }
     };
 
@@ -75,17 +83,17 @@ export default function CustomerNotifications() {
                         {notifications.map((notification) => (
                             <li 
                                 key={notification.id} 
-                                className={`p-4 hover:bg-gray-50 transition-colors ${!notification.is_read ? 'bg-blue-50/50' : 'bg-white'}`}
-                                onClick={() => !notification.is_read && markAsRead(notification.id)}
+                                className={`p-4 transition-colors ${!notification.is_read ? 'bg-blue-50/50' : 'bg-white'} ${notification.link ? 'cursor-pointer hover:bg-gray-50' : ''}`}
+                                onClick={() => void handleNotificationClick(notification)}
                             >
-                                <div className="flex space-x-3 cursor-pointer">
+                                <div className="flex space-x-3">
                                     <div className="flex-shrink-0 mt-1">
-                                        {notification.type === 'system' ? (
-                                            <AlertCircle className={`h-6 w-6 ${!notification.is_read ? 'text-blue-600' : 'text-gray-400'}`} />
-                                        ) : notification.type === 'billing' ? (
-                                            <Bell className={`h-6 w-6 ${!notification.is_read ? 'text-blue-600' : 'text-gray-400'}`} />
+                                        {notification.type === 'warning' || notification.type === 'error' ? (
+                                            <AlertCircle className={`h-6 w-6 ${!notification.is_read ? 'text-amber-600' : 'text-gray-400'}`} />
+                                        ) : notification.type === 'success' ? (
+                                            <CheckCircle2 className={`h-6 w-6 ${!notification.is_read ? 'text-green-600' : 'text-gray-400'}`} />
                                         ) : (
-                                            <CheckCircle2 className={`h-6 w-6 ${!notification.is_read ? 'text-blue-600' : 'text-gray-400'}`} />
+                                            <Bell className={`h-6 w-6 ${!notification.is_read ? 'text-blue-600' : 'text-gray-400'}`} />
                                         )}
                                     </div>
                                     <div className="min-w-0 flex-1">
@@ -100,6 +108,11 @@ export default function CustomerNotifications() {
                                         <p className={`mt-1 text-sm ${!notification.is_read ? 'text-gray-800' : 'text-gray-500'}`}>
                                             {notification.message}
                                         </p>
+                                        {notification.link && (
+                                            <p className="mt-2 text-xs font-medium uppercase tracking-wide text-blue-600">
+                                                Open related page
+                                            </p>
+                                        )}
                                     </div>
                                     {!notification.is_read && (
                                         <div className="flex-shrink-0 self-center">

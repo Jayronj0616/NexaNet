@@ -16,7 +16,7 @@ interface PaymentModalProps {
 }
 
 export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, bill, onPaymentSuccess }) => {
-    const [method, setMethod] = useState('credit_card');
+    const [method, setMethod] = useState('stripe');
     const [loading, setLoading] = useState(false);
 
     if (!bill) return null;
@@ -24,27 +24,19 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, bil
     const handlePay = async () => {
         setLoading(true);
         try {
-            // Call the scaffold backend endpoint
             const response = await api.post('/customer/payments/initiate', {
                 bill_id: bill.id,
                 method,
             });
 
-            console.log('Payment Initiated Scaffold Result:', response.data);
+            if (response.data.checkout_url) {
+                window.location.href = response.data.checkout_url as string;
+                return;
+            }
 
-            // Scaffold Simulation: 
-            // In a real app we'd redirect to Stripe checkout or show PayMongo elements.
-            // For this phase, we pretend it succeeds.
-
-            setTimeout(async () => {
-                // Manually mark the bill as paid via our admin endpoint just to simulate success 
-                // Alternatively, the webhook would do this in real life.
-                toast('Payment Initiated! Redirecting to gateway... (Scaffold Simulated Success)', 'success');
-                
-                // Simulate webhook fulfilling payment after 2 seconds
-                onPaymentSuccess();
-                onClose();
-            }, 1000);
+            toast(response.data.message || 'Payment recorded successfully.', 'success');
+            onPaymentSuccess();
+            onClose();
 
         } catch (error: any) {
              console.error('Payment failed', error);
@@ -67,10 +59,10 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, bil
                     <label className="block text-sm font-medium text-gray-700 mb-3">Select Payment Method</label>
                     <div className="grid grid-cols-2 gap-4">
                         {[
-                            { id: 'credit_card', label: 'Credit Card (Stripe)' },
-                            { id: 'gcash', label: 'GCash (PayMongo)' },
-                            { id: 'paymaya', label: 'PayMaya' },
+                            { id: 'stripe', label: 'Card (Stripe)' },
+                            { id: 'paymongo', label: 'PayMongo' },
                             { id: 'bank_transfer', label: 'Bank Transfer' },
+                            { id: 'cash', label: 'Cash Payment' },
                         ].map((m) => (
                             <label
                                 key={m.id}
@@ -98,7 +90,7 @@ export const PaymentModal: React.FC<PaymentModalProps> = ({ isOpen, onClose, bil
                     <div className="flex">
                         <div className="ml-3">
                             <p className="text-sm text-yellow-700">
-                                <strong>Note:</strong> This is a scaffolded payment flow. Clicking pay will simulate a successful intent creation.
+                                <strong>Note:</strong> This local build uses a sandbox payment flow. Bills are marked paid immediately here, and the real gateway redirect will be wired in later.
                             </p>
                         </div>
                     </div>

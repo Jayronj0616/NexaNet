@@ -40,4 +40,10 @@ class SupportTicket extends Model
     {
         return $this->hasMany(TicketReply::class, 'ticket_id');
     }
+
+    public function attachments()
+    {
+        return $this->hasMany(SupportTicketAttachment::class, 'support_ticket_id')
+            ->whereNull('ticket_reply_id');
+    }
 }

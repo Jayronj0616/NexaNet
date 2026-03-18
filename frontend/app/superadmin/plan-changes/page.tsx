@@ -18,7 +18,7 @@ export default function SuperAdminPlanChanges() {
     const fetchRequests = async () => {
         setLoading(true);
         try {
-            const response = await api.get('/superadmin/plan-changes');
+            const response = await api.get('/superadmin/plan-change-requests');
             setRequests(response.data.data || response.data);
         } catch (error) {
             console.error("Failed to load plan change requests", error);
@@ -36,7 +36,7 @@ export default function SuperAdminPlanChanges() {
         
         setProcessingId(id);
         try {
-            await api.put(`/superadmin/plan-changes/${id}/${action}`);
+            await api.patch(`/superadmin/plan-change-requests/${id}/${action}`);
             toast(`Request ${action}d successfully`, 'success');
             fetchRequests(); // Refresh to get updated status and potentially updated subscription details
         } catch (error: any) {

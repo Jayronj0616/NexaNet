@@ -5,10 +5,13 @@ namespace App\Http\Controllers\Customer;
 use App\Http\Controllers\Controller;
 use App\Models\Bill;
 use App\Models\Payment;
+use App\Support\SendsSystemNotifications;
 use Illuminate\Http\Request;
 
 class PaymentController extends Controller
 {
+    use SendsSystemNotifications;
+
     /**
      * Scaffold: initiate a payment.
      * TODO: Replace stub with actual Stripe or PayMongo SDK call.
@@ -26,32 +29,42 @@ class PaymentController extends Controller
             return response()->json(['message' => 'This bill is already paid.'], 422);
         }
 
-        // --- PAYMENT GATEWAY STUB ---
-        // TODO: Initialize Stripe/PayMongo session here
-        // Example (Stripe):
-        //   $session = \Stripe\Checkout\Session::create([...]);
-        //   return response()->json(['checkout_url' => $session->url]);
-        //
-        // Example (PayMongo):
-        //   $source = PayMongo::createSource([...]);
-        //   return response()->json(['checkout_url' => $source->redirect->checkout_url]);
-        // ----------------------------
+        if ($bill->status === 'cancelled') {
+            return response()->json(['message' => 'Cancelled bills cannot be paid.'], 422);
+        }
 
-        // Stub response for now
+        // Sandbox payment flow for local/demo use.
+        // Replace this block with real Stripe or PayMongo session creation.
         $payment = Payment::create([
             'user_id'               => $request->user()->id,
             'bill_id'               => $bill->id,
             'amount'                => $bill->amount,
             'method'                => $request->method,
-            'status'                => 'pending',
-            'transaction_reference' => 'STUB-' . strtoupper(uniqid()),
-            'gateway_response'      => ['stub' => true, 'message' => 'Payment gateway not yet integrated.'],
+            'status'                => 'success',
+            'transaction_reference' => 'SBX-' . strtoupper(uniqid()),
+            'gateway_response'      => [
+                'mode' => 'sandbox',
+                'message' => 'Sandbox payment completed locally. Configure a real gateway for production.',
+            ],
+            'paid_at'               => now(),
         ]);
 
+        $bill->status = 'paid';
+        $bill->paid_at = now();
+        $bill->save();
+
+        $this->sendSystemEmail(
+            $request->user()->email,
+            'Payment Received',
+            "Hi {$request->user()->first_name},\n\nWe received your payment for bill {$bill->bill_number}.\nAmount paid: PHP " . number_format((float) $bill->amount, 2) . ".\nYour account has been updated successfully.",
+            $this->frontendUrl('customer/billing'),
+            'View Billing'
+        );
+
         return response()->json([
-            'message'     => 'Payment initiated (stub). Gateway not yet integrated.',
+            'message'      => 'Sandbox payment recorded successfully.',
             'payment'     => $payment,
-            'checkout_url' => null, // TODO: return real checkout URL from gateway
+            'checkout_url' => null, // Return a real checkout URL once a gateway is integrated.
         ]);
     }
 

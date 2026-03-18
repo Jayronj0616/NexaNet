@@ -98,4 +98,14 @@ class User extends Authenticatable
     {
         return $this->hasMany(ServiceApplication::class);
     }
+
+    public function serviceApplicationActivities()
+    {
+        return $this->hasMany(ServiceApplicationActivity::class);
+    }
+
+    public function ticketAttachments()
+    {
+        return $this->hasMany(SupportTicketAttachment::class);
+    }
 }

@@ -4,11 +4,14 @@ namespace App\Http\Controllers\Public;
 
 use App\Http\Controllers\Controller;
 use App\Models\ServiceApplication;
+use App\Support\SendsSystemNotifications;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 
 class ServiceApplicationController extends Controller
 {
+    use SendsSystemNotifications;
+
     public function store(Request $request)
     {
         $request->validate([
@@ -31,14 +34,25 @@ class ServiceApplicationController extends Controller
             ]),
             'reference_number' => 'NXN-' . strtoupper(Str::random(8)),
             'status'           => 'pending',
-        ]);
+        ])->load('plan');
+        $application->recordActivity(
+            'submitted',
+            'Application submitted',
+            'The applicant submitted a new service request and is waiting for review.'
+        );
 
-        // TODO: Send confirmation email
+        $this->sendSystemEmail(
+            $application->email,
+            'Application Submitted',
+            "Hi {$application->first_name},\n\nWe received your NexaNet service application for the {$application->plan->name} plan.\nYour reference number is {$application->reference_number}.\n\nYou can track your application status anytime using the link below.",
+            $this->frontendUrl("track?reference={$application->reference_number}"),
+            'Track Application'
+        );
 
         return response()->json([
             'message'          => 'Application submitted successfully.',
             'reference_number' => $application->reference_number,
-            'application'      => $application->load('plan'),
+            'application'      => $application,
         ], 201);
     }
 
@@ -49,19 +63,28 @@ class ServiceApplicationController extends Controller
             'email'     => 'required_without:reference|nullable|email',
         ]);
 
-        $query = ServiceApplication::with('plan');
-
         if ($request->reference) {
-            $query->where('reference_number', $request->reference);
-        } else {
-            $query->where('email', $request->email);
+            $application = ServiceApplication::with('plan')
+                ->where('reference_number', $request->reference)
+                ->first();
+
+            if (! $application) {
+                return response()->json(['message' => 'No application found.'], 404);
+            }
+
+            return response()->json($application->append(['status_label', 'status_description', 'timeline']));
         }
 
-        $applications = $query->get();
+        $applications = ServiceApplication::with('plan')
+            ->where('email', $request->email)
+            ->latest()
+            ->get();
 
         if ($applications->isEmpty()) {
             return response()->json(['message' => 'No application found.'], 404);
         }
+
+        $applications->each->append(['status_label', 'status_description', 'timeline']);
 
         return response()->json($applications);
     }

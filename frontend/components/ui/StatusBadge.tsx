@@ -3,14 +3,15 @@ import { Badge } from './Badge';
 import { formatStatus } from '@/lib/utils';
 
 interface StatusBadgeProps {
-    status: string;
+    status?: string | null;
     className?: string;
 }
 
 export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) => {
     let variant: 'default' | 'success' | 'warning' | 'danger' | 'info' = 'default';
+    const normalizedStatus = status ?? 'unknown';
 
-    switch (status.toLowerCase()) {
+    switch (normalizedStatus.toLowerCase()) {
         case 'active':
         case 'paid':
         case 'resolved':
@@ -42,7 +43,7 @@ export const StatusBadge: React.FC<StatusBadgeProps> = ({ status, className }) =
 
     return (
         <Badge variant={variant} className={className}>
-            {formatStatus(status)}
+            {formatStatus(normalizedStatus)}
         </Badge>
     );
 };

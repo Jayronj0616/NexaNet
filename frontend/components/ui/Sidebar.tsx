@@ -6,7 +6,6 @@ import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { 
     LayoutDashboard, 
-    CreditCard, 
     Ticket, 
     Bell, 
     Settings, 
@@ -42,7 +41,6 @@ const getRoleNavigation = (role: string): SidebarItem[] => {
                 { name: 'Dashboard', href: '/admin/dashboard', icon: LayoutDashboard },
                 { name: 'Subscribers', href: '/admin/subscribers', icon: Users },
                 { name: 'Applications', href: '/admin/applications', icon: FileText },
-                { name: 'Billing', href: '/admin/billing', icon: CreditCard },
                 { name: 'Tickets', href: '/admin/tickets', icon: Ticket },
                 { name: 'Announcements', href: '/admin/announcements', icon: Megaphone },
             ];
@@ -50,7 +48,6 @@ const getRoleNavigation = (role: string): SidebarItem[] => {
         default:
             return [
                 { name: 'Dashboard', href: '/customer/dashboard', icon: LayoutDashboard },
-                { name: 'Billing', href: '/customer/billing', icon: CreditCard },
                 { name: 'Tickets', href: '/customer/tickets', icon: Ticket },
                 { name: 'Notifications', href: '/customer/notifications', icon: Bell },
             ];

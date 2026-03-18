@@ -13,15 +13,17 @@ class NotificationService
      * @param string $title
      * @param string $message
      * @param string $type (info|success|warning|error)
+     * @param string|null $link
      * @return Notification
      */
-    public function notify($userId, $title, $message, $type = 'info')
+    public function notify($userId, $title, $message, $type = 'info', $link = null)
     {
         return Notification::create([
             'user_id' => $userId,
             'title' => $title,
             'message' => $message,
             'type' => $type,
+            'link' => $link,
             'is_read' => false
         ]);
     }

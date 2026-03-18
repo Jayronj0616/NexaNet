@@ -5,11 +5,13 @@ export function cn(...inputs: ClassValue[]) {
     return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number): string {
+export function formatCurrency(amount: number | string): string {
+    const numericAmount = typeof amount === 'string' ? Number(amount) : amount;
+
     return new Intl.NumberFormat('en-PH', {
         style: 'currency',
         currency: 'PHP',
-    }).format(amount);
+    }).format(Number.isFinite(numericAmount) ? numericAmount : 0);
 }
 
 export function formatDate(dateString: string): string {
@@ -32,4 +34,11 @@ export function formatDateTime(dateString: string): string {
 
 export function formatStatus(status: string): string {
     return status.split('_').map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+export function formatFileSize(sizeBytes: number): string {
+    if (sizeBytes < 1024) return `${sizeBytes} B`;
+    if (sizeBytes < 1024 * 1024) return `${(sizeBytes / 1024).toFixed(1)} KB`;
+
+    return `${(sizeBytes / (1024 * 1024)).toFixed(1)} MB`;
 }

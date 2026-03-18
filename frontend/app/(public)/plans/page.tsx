@@ -17,7 +17,7 @@ export default function PlansPage() {
                 const response = await api.get('/public/plans');
                 setPlans(response.data.data || response.data);
             } catch (error) {
-                console.error("Failed to fetch plans", error);
+                console.error('Failed to fetch plans', error);
             } finally {
                 setLoading(false);
             }
@@ -38,12 +38,13 @@ export default function PlansPage() {
                     </p>
                 </div>
                 <p className="mx-auto mt-6 max-w-2xl text-center text-lg leading-8 text-gray-600">
-                    Choose an affordable plan that's packed with the best features for engaging your audience, creating customer loyalty, and driving sales.
+                    Choose an affordable plan that&apos;s packed with the best features for engaging your audience, creating customer loyalty, and driving sales.
                 </p>
 
                 <div className="isolate mx-auto mt-16 grid max-w-md grid-cols-1 gap-y-8 sm:mt-20 lg:mx-0 lg:max-w-none lg:grid-cols-4 lg:gap-x-8 xl:gap-x-12">
                     {plans.map((plan, index) => {
-                        const isPopular = index === 1; // Highlight the second plan usually
+                        const isPopular = index === 1;
+
                         return (
                             <div
                                 key={plan.id}
@@ -71,17 +72,22 @@ export default function PlansPage() {
                                     </p>
                                     <p className="mt-6 flex items-baseline gap-x-1">
                                         <span className={`text-4xl font-bold tracking-tight ${isPopular ? 'text-white' : 'text-gray-900'}`}>
-                                            ₱{plan.price}
+                                            PHP {Number(plan.price).toLocaleString('en-PH', {
+                                                minimumFractionDigits: 2,
+                                                maximumFractionDigits: 2,
+                                            })}
                                         </span>
                                         <span className={`text-sm font-semibold leading-6 ${isPopular ? 'text-gray-300' : 'text-gray-600'}`}>/month</span>
                                     </p>
                                     <ul role="list" className={`mt-8 space-y-3 text-sm leading-6 ${isPopular ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        {Array.isArray(plan.features) ? plan.features.map((feature, featureIdx) => (
-                                            <li key={featureIdx} className="flex gap-x-3">
-                                                <Check className={`h-6 w-5 flex-none ${isPopular ? 'text-blue-400' : 'text-blue-600'}`} aria-hidden="true" />
-                                                {feature}
-                                            </li>
-                                        )) : null}
+                                        {Array.isArray(plan.features)
+                                            ? plan.features.map((feature, featureIdx) => (
+                                                  <li key={featureIdx} className="flex gap-x-3">
+                                                      <Check className={`h-6 w-5 flex-none ${isPopular ? 'text-blue-400' : 'text-blue-600'}`} aria-hidden="true" />
+                                                      {feature}
+                                                  </li>
+                                              ))
+                                            : null}
                                         <li className="flex gap-x-3">
                                             <Check className={`h-6 w-5 flex-none ${isPopular ? 'text-blue-400' : 'text-blue-600'}`} aria-hidden="true" />
                                             Free Installation

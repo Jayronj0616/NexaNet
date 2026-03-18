@@ -89,6 +89,7 @@ Route::prefix('customer')
         Route::get('tickets', [CustomerTicketController::class, 'index']);
         Route::post('tickets', [CustomerTicketController::class, 'store']);
         Route::get('tickets/{ticket}', [CustomerTicketController::class, 'show']);
+        Route::get('tickets/{ticket}/attachments/{attachment}', [CustomerTicketController::class, 'downloadAttachment']);
         Route::post('tickets/{ticket}/replies', [CustomerTicketController::class, 'reply']);
 
         // Notifications
@@ -119,6 +120,7 @@ Route::prefix('admin')
         // Service Applications
         Route::get('applications', [AdminApplicationController::class, 'index']);
         Route::get('applications/{application}', [AdminApplicationController::class, 'show']);
+        Route::patch('applications/{application}/notes', [AdminApplicationController::class, 'updateNotes']);
         Route::patch('applications/{application}/approve', [AdminApplicationController::class, 'approve']);
         Route::patch('applications/{application}/reject', [AdminApplicationController::class, 'reject']);
         Route::patch('applications/{application}/schedule', [AdminApplicationController::class, 'schedule']);
@@ -135,6 +137,7 @@ Route::prefix('admin')
         // Support Tickets
         Route::get('tickets', [AdminTicketController::class, 'index']);
         Route::get('tickets/{ticket}', [AdminTicketController::class, 'show']);
+        Route::get('tickets/{ticket}/attachments/{attachment}', [AdminTicketController::class, 'downloadAttachment']);
         Route::patch('tickets/{ticket}/status', [AdminTicketController::class, 'updateStatus']);
         Route::post('tickets/{ticket}/replies', [AdminTicketController::class, 'reply']);
 
@@ -145,10 +148,6 @@ Route::prefix('admin')
         Route::put('announcements/{announcement}', [AdminAnnouncementController::class, 'update']);
         Route::delete('announcements/{announcement}', [AdminAnnouncementController::class, 'destroy']);
 
-        // Plan change requests (admin review)
-        Route::get('plan-change-requests', [SuperAdminPlanChangeController::class, 'index']);
-        Route::patch('plan-change-requests/{request}/approve', [SuperAdminPlanChangeController::class, 'approve']);
-        Route::patch('plan-change-requests/{request}/reject', [SuperAdminPlanChangeController::class, 'reject']);
     });
 
 /*
@@ -168,6 +167,11 @@ Route::prefix('superadmin')
         Route::put('plans/{plan}', [SuperAdminPlanController::class, 'update']);
         Route::patch('plans/{plan}/toggle', [SuperAdminPlanController::class, 'toggle']);
         Route::delete('plans/{plan}', [SuperAdminPlanController::class, 'destroy']);
+
+        // Plan change requests
+        Route::get('plan-change-requests', [SuperAdminPlanChangeController::class, 'index']);
+        Route::patch('plan-change-requests/{request}/approve', [SuperAdminPlanChangeController::class, 'approve']);
+        Route::patch('plan-change-requests/{request}/reject', [SuperAdminPlanChangeController::class, 'reject']);
 
         // Staff management
         Route::get('staff', [StaffController::class, 'index']);

@@ -28,7 +28,7 @@ export default function CustomerDashboard() {
 
     if (loading) return <FullPageLoader />;
 
-    const { subscription, latest_bill, unread_notifications, open_tickets } = data || {};
+    const { subscription, unread_notifications, open_tickets } = data || {};
 
     return (
         <div className="space-y-6">
@@ -84,7 +84,7 @@ export default function CustomerDashboard() {
                                 <dd className="mt-1 text-sm text-gray-900">Up to {subscription.plan?.speed_mbps} Mbps</dd>
                             </div>
                             <div className="sm:col-span-1">
-                                <dt className="text-sm font-medium text-gray-500">Monthly Fee</dt>
+                                <dt className="text-sm font-medium text-gray-500">Plan Rate</dt>
                                 <dd className="mt-1 text-sm text-gray-900">{formatCurrency(subscription.plan?.price)}</dd>
                             </div>
                             <div className="sm:col-span-1">
@@ -92,40 +92,41 @@ export default function CustomerDashboard() {
                                 <dd className="mt-1 text-sm text-gray-900">{formatDate(subscription.start_date)}</dd>
                             </div>
                             <div className="sm:col-span-1">
-                                <dt className="text-sm font-medium text-gray-500">Next Billing Date</dt>
-                                <dd className="mt-1 text-sm text-gray-900">{formatDate(subscription.next_billing_date)}</dd>
+                                <dt className="text-sm font-medium text-gray-500">Plan Cycle</dt>
+                                <dd className="mt-1 text-sm text-gray-900 capitalize">{subscription.plan?.billing_cycle || '--'}</dd>
                             </div>
                         </dl>
                     </div>
                 )}
 
-                {/* Latest Bill Widget */}
+                {/* Support Center */}
                 <div className="bg-white shadow rounded-lg px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Latest Bill</h3>
-                    {latest_bill ? (
-                        <div>
-                            <div className="flex justify-between items-center mb-4">
-                                <div>
-                                    <p className="text-sm font-medium text-gray-500">Amount Due</p>
-                                    <p className="text-2xl font-bold text-gray-900">{formatCurrency(latest_bill.amount)}</p>
-                                </div>
-                                <StatusBadge status={latest_bill.status} />
+                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Support Center</h3>
+                    <div className="space-y-4">
+                        <p className="text-sm text-gray-600">
+                            Keep application concerns, installation questions, and service follow-ups in one place.
+                        </p>
+                        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+                            <div className="rounded-lg border border-blue-100 bg-blue-50 p-4">
+                                <p className="text-sm font-medium text-blue-700">Open Inquiries</p>
+                                <p className="mt-2 text-2xl font-bold text-blue-900">{open_tickets || 0}</p>
+                                <p className="mt-1 text-xs text-blue-700">Track active conversations with the support team.</p>
                             </div>
-                            <div className="text-sm text-gray-600 mb-6">
-                                <p>Due Date: <span className="font-semibold text-gray-900">{formatDate(latest_bill.due_date)}</span></p>
-                                <p>Period: {formatDate(latest_bill.billing_period_start)} - {formatDate(latest_bill.billing_period_end)}</p>
-                            </div>
-                            <div className="mt-4 flex gap-3">
-                                <Link href="/customer/billing" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
-                                    View All Bills &rarr;
-                                </Link>
+                            <div className="rounded-lg border border-gray-200 bg-gray-50 p-4">
+                                <p className="text-sm font-medium text-gray-700">Unread Notifications</p>
+                                <p className="mt-2 text-2xl font-bold text-gray-900">{unread_notifications || 0}</p>
+                                <p className="mt-1 text-xs text-gray-600">Stay on top of replies and application updates.</p>
                             </div>
                         </div>
-                    ) : (
-                        <div className="text-center py-6">
-                            <p className="text-gray-500 text-sm">No bills generated yet.</p>
+                        <div className="flex flex-wrap gap-3 pt-2">
+                            <Link href="/customer/tickets" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                                Open Support Tickets &rarr;
+                            </Link>
+                            <Link href="/customer/notifications" className="text-blue-600 hover:text-blue-500 text-sm font-medium">
+                                View Notifications &rarr;
+                            </Link>
                         </div>
-                    )}
+                    </div>
                 </div>
             </div>
         </div>

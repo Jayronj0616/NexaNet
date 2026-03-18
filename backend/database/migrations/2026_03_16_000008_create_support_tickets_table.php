@@ -14,7 +14,7 @@ return new class extends Migration
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->string('subject');
             $table->text('description');
-            $table->enum('category', ['billing', 'technical', 'account', 'general'])->default('general');
+            $table->enum('category', ['application', 'billing', 'technical', 'account', 'general'])->default('general');
             $table->enum('priority', ['low', 'medium', 'high', 'urgent'])->default('medium');
             $table->enum('status', ['open', 'in_progress', 'resolved', 'closed'])->default('open');
             $table->foreignId('assigned_to')->nullable()->constrained('users')->onDelete('set null');

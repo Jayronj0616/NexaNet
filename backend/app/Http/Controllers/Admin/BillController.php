@@ -5,12 +5,13 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Bill;
 use App\Models\Subscription;
-use App\Models\User;
+use App\Support\SendsSystemNotifications;
 use Illuminate\Http\Request;
-use Carbon\Carbon;
 
 class BillController extends Controller
 {
+    use SendsSystemNotifications;
+
     public function index(Request $request)
     {
         $bills = Bill::with('user')->orderBy('created_at', 'desc')->paginate(15);
@@ -45,7 +46,7 @@ class BillController extends Controller
     public function generate(Request $request)
     {
         // Simple scaffold for generating bills for active subscriptions
-        $subscriptions = Subscription::with('plan')->where('status', 'active')->get();
+        $subscriptions = Subscription::with(['plan', 'user'])->where('status', 'active')->get();
         $generatedCount = 0;
 
         foreach ($subscriptions as $sub) {
@@ -55,7 +56,7 @@ class BillController extends Controller
                 ->exists();
 
             if (!$existing) {
-                Bill::create([
+                $bill = Bill::create([
                     'user_id' => $sub->user_id,
                     'subscription_id' => $sub->id,
                     'bill_number' => 'INV-' . strtoupper(uniqid()),
@@ -66,6 +67,16 @@ class BillController extends Controller
                     'status' => 'unpaid'
                 ]);
                 $generatedCount++;
+
+                if ($sub->user?->email) {
+                    $this->sendSystemEmail(
+                        $sub->user->email,
+                        'New Bill Generated',
+                        "Hi {$sub->user->first_name},\n\nA new bill ({$bill->bill_number}) has been generated for your {$sub->plan->name} subscription.\nAmount due: PHP " . number_format((float) $bill->amount, 2) . "\nDue date: {$bill->due_date?->format('F j, Y')}.",
+                        $this->frontendUrl('customer/billing'),
+                        'View Billing'
+                    );
+                }
             }
         }
 

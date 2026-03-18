@@ -5,7 +5,6 @@ import { api } from '@/lib/api';
 import { PageHeader } from '@/components/ui/PageHeader';
 import { FullPageLoader } from '@/components/ui/LoadingSpinner';
 import { Users, FileText, AlertCircle, TrendingUp } from 'lucide-react';
-import { formatCurrency } from '@/lib/utils';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
@@ -33,7 +32,6 @@ export default function AdminDashboard() {
         active_subscribers, 
         pending_applications, 
         open_tickets,
-        monthly_revenue,
         recent_applications
     } = data || {};
 
@@ -66,13 +64,26 @@ export default function AdminDashboard() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mt-8">
-                {/* Financial Overview (Simplified) */}
+                {/* Support Queue */}
                 <div className="bg-white shadow rounded-lg px-4 py-5 sm:p-6">
-                    <h3 className="text-lg leading-6 font-medium text-gray-900 mb-4">Financial Overview (MTD)</h3>
-                    <div className="flex items-center justify-center h-32 bg-gray-50 rounded border border-dashed border-gray-200">
-                        <div className="text-center">
-                            <p className="text-sm text-gray-500">Estimated Monthly Revenue</p>
-                            <p className="text-4xl font-bold text-gray-900 mt-2">{formatCurrency(monthly_revenue || 0)}</p>
+                    <div className="flex items-center justify-between mb-4">
+                        <h3 className="text-lg leading-6 font-medium text-gray-900">Support Queue</h3>
+                        <Link href="/admin/tickets" className="text-sm font-medium text-blue-600 hover:text-blue-500">Open tickets</Link>
+                    </div>
+                    <div className="space-y-4">
+                        <div className="rounded-lg border border-red-100 bg-red-50 p-4">
+                            <p className="text-sm font-medium text-red-700">Tickets Needing Attention</p>
+                            <p className="mt-2 text-3xl font-bold text-red-900">{open_tickets || 0}</p>
+                            <p className="mt-1 text-xs text-red-700">Open and in-progress inquiries waiting for team action.</p>
+                        </div>
+                        <div className="rounded-lg border border-yellow-100 bg-yellow-50 p-4">
+                            <p className="text-sm font-medium text-yellow-700">Pending Applications</p>
+                            <p className="mt-2 text-3xl font-bold text-yellow-900">{pending_applications || 0}</p>
+                            <p className="mt-1 text-xs text-yellow-700">Application reviews that may turn into support follow-ups.</p>
+                        </div>
+                        <div className="flex flex-wrap gap-3 pt-1">
+                            <Link href="/admin/tickets" className="text-blue-600 hover:text-blue-500 text-sm font-medium">Review support queue &rarr;</Link>
+                            <Link href="/admin/applications" className="text-blue-600 hover:text-blue-500 text-sm font-medium">Review applications &rarr;</Link>
                         </div>
                     </div>
                 </div>
