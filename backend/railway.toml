@@ -2,7 +2,7 @@
 builder = "RAILPACK"
 
 [deploy]
-preDeployCommand = "php artisan migrate --force"
+preDeployCommand = "php artisan migrate --force && php artisan db:seed --force"
 healthcheckPath = "/up"
 healthcheckTimeout = 300
 restartPolicyType = "ON_FAILURE"

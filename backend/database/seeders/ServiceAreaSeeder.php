@@ -20,7 +20,14 @@ class ServiceAreaSeeder extends Seeder
         ];
 
         foreach ($areas as $area) {
-            ServiceArea::create($area);
+            ServiceArea::updateOrCreate(
+                [
+                    'barangay' => $area['barangay'],
+                    'city' => $area['city'],
+                    'province' => $area['province'],
+                ],
+                $area,
+            );
         }
     }
 }
